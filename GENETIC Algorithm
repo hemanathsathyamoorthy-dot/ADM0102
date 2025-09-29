@@ -1,0 +1,55 @@
+import random
+
+def fitness(x):
+    """Fitness function to maximize: f(x) = x^2"""
+    return x ** 2
+
+# ---------------- Initialize Population ----------------
+def generate_population(size, gene_length):
+    population = []
+    for _ in range(size):
+        individual = ''.join(random.choice('01') for _ in range(gene_length))
+        population.append(individual)
+    return population
+def selection(population):
+    fitness_values = [fitness(int(ind, 2)) for ind in population]
+    total_fitness = sum(fitness_values)
+    probabilities = [f / total_fitness for f in fitness_values]
+    selected = random.choices(population, weights=probabilities, k=2)
+    return selected
+
+# ---------------- Crossover ----------------
+def crossover(parent1, parent2):
+    point = random.randint(1, len(parent1) - 1)
+    child1 = parent1[:point] + parent2[point:]
+    child2 = parent2[:point] + parent1[point:]
+    return child1, child2
+
+# ---------------- Mutation ----------------
+def mutate(individual, mutation_rate=0.1):
+    mutated = ''
+    for gene in individual:
+        if random.random() < mutation_rate:
+            mutated += '1' if gene == '0' else '0'
+        else:
+            mutated += gene
+    return mutated
+
+# ---------------- Genetic Algorithm ----------------
+def genetic_algorithm(generations=10, population_size=6, gene_length=5):
+    population = generate_population(population_size, gene_length)
+    
+    for generation in range(generations):
+        new_population = []
+        while len(new_population) < population_size:
+            parent1, parent2 = selection(population)
+            child1, child2 = crossover(parent1, parent2)
+            new_population.extend([mutate(child1), mutate(child2)])
+        
+        population = new_population[:population_size]
+        best = max(population, key=lambda ind: fitness(int(ind, 2)))
+        print(f"Generation {generation}: Best = {int(best,2)}, Fitness = {fitness(int(best,2))}")
+
+# ---------------- Run the GA ----------------
+if __name__ == "__main__":
+    genetic_algorithm()
